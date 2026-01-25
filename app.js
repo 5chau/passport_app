@@ -27,7 +27,7 @@ async function callAPI(action, data = {}) {
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain',
       },
       body: JSON.stringify({
         action: action,

@@ -29,10 +29,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     try {
       // Call API to register user
+      // Use text/plain to avoid CORS preflight
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain',
         },
         body: JSON.stringify({
           action: 'registerUser',

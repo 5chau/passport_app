@@ -7,7 +7,7 @@
 var SPREADSHEET_ID = '1gysphll2EX78L0xHDAwyPIVuVArbqKTEicfSXvekmAQ';
 
 // GITHUB PAGES URL - Update this after deploying to GitHub
-var GITHUB_PAGES_URL = 'https://yourusername.github.io/passport-app/';
+var GITHUB_PAGES_URL = 'https://5chau.github.io/passport_app/';
 
 var CODE_VERSION = "v3.0-github"; // Updated version for GitHub Pages migration
 
@@ -38,9 +38,6 @@ function doGet(e) {
 
 // Handle POST requests (API endpoints)
 function doPost(e) {
-  var output = ContentService.createTextOutput();
-  output.setMimeType(ContentService.MimeType.JSON);
-
   try {
     var data = JSON.parse(e.postData.contents);
     var action = data.action;
@@ -115,17 +112,21 @@ function doPost(e) {
     }
 
     Logger.log('API Response: ' + JSON.stringify(result));
-    output.setContent(JSON.stringify(result));
-    return output;
+
+    return ContentService
+      .createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
 
   } catch(error) {
     Logger.log('API Error: ' + error.message);
     Logger.log('Stack trace: ' + error.stack);
-    output.setContent(JSON.stringify({
-      error: error.message,
-      stack: error.stack
-    }));
-    return output;
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        error: error.message,
+        stack: error.stack
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
