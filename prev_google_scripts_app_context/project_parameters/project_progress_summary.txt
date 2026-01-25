@@ -1,0 +1,45 @@
+215 Supper Club Digital Passport - Project Summary
+What This Project Is
+The 215 Supper Club Digital Passport is a web application that lets members track their culinary journey through different countries. Each member gets a personalized digital passport where they can:
+
+Collect stamps from locations visited during monthly supper club meetings
+Create cultural objects (books, movies, art) associated with each place
+Track dishes created at meetings
+Customize their passport color
+Share their passport via unique URL
+
+The system uses:
+
+Google Sheets as the database (5 sheets: Users, Locations, Objects, Food, Master_Locations)
+Google Forms for member registration with auto-generated user IDs and unique URLs
+Google Apps Script for backend (Code.gs) and web hosting
+HTML/CSS/JavaScript for frontend (Passport.html, Styles.html, Script.html)
+
+Current Goals
+
+Immediate: Fix the deployment/caching issue preventing users from accessing their passports via unique URLs
+Next: Complete the frontend interface with all interactive features (stamping, object creation, etc.)
+Future: Expand color palette, add QR codes, build admin dashboard
+
+Challenges Faced
+Primary Issue: Deployment Caching & User Data Retrieval
+The web app consistently shows "user not found" when accessing unique URLs, despite backend functions working perfectly in the Apps Script editor.
+Root causes identified:
+
+Aggressive Google Apps Script deployment caching serves old code even with "new deployments"
+String comparison issues between URL parameters and database values (whitespace, type mismatches)
+Frontend-backend parameter passing complexity in the templated HTML system
+
+Debugging approaches tried:
+
+Added comprehensive logging to trace data flow
+Created diagnostic functions (diagnoseUserLookup, testSpecificUrl)
+Implemented string trimming and type conversion in getUserData()
+Added debug info display in frontend
+Created multiple fresh deployments
+
+Secondary Challenges
+
+Variable scoping: The userId variable needs careful handling across Passport.html and Script.html
+Data flow complexity: URL parameter → template serving → JavaScript → backend calls → database queries (each step needs verification)
+Cache invalidation: No reliable way to force Google Apps Script to serve fresh code without creating entirely new deployments

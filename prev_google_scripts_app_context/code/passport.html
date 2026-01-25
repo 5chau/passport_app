@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>215 Supper Club Passport</title>
+  <?!= include('Styles'); ?>
+</head>
+<body>
+  <!-- DEBUG INFO (can be removed once working) -->
+  <div id="debugBox" style="position: fixed; top: 0; left: 0; background: yellow; padding: 10px; z-index: 10000; font-family: monospace; font-size: 11px; max-width: 100%; overflow-x: auto;">
+    <strong>DEBUG:</strong> userId = <span id="debugUserId"></span>
+  </div>
+  <!-- END DEBUG -->
+  
+  <div id="app">
+    <!-- Cover View -->
+    <div id="coverView" class="view active">
+      <div class="passport-cover">
+        <div class="asterisk-btn" onclick="showColorPicker()">*</div>
+        <h1>PASSPORT</h1>
+        <p class="handle">@215supperclub</p>
+        <button class="enter-btn" onclick="openPassport()">enter →</button>
+      </div>
+    </div>
+
+    <!-- Interior View -->
+    <div id="interiorView" class="view">
+      <div class="passport-interior">
+        <h2>215 Supper Club</h2>
+        
+        <div class="user-info">
+          <div class="avatar"></div>
+          <div class="user-details">
+            <p class="name">name: <span id="userName">loading...</span></p>
+            <p class="insta">insta: @<span id="userInsta">loading...</span></p>
+          </div>
+          <div class="share-btn" onclick="showQRCode()">↗</div>
+        </div>
+
+        <div class="progress-section">
+          <p class="section-title">supper clubs attended</p>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <p class="progress-text"><span id="userStamps">0</span>/<span id="totalStamps">0</span></p>
+        </div>
+
+        <div class="currently-viewing">
+          <p class="section-title">currently viewing</p>
+          <p class="object-name" id="currentObject">—</p>
+        </div>
+
+        <div class="places-section">
+          <p class="section-title">places visited</p>
+          <div class="stamps-container" id="stampsContainer">
+            <!-- Stamps will be added here -->
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="action-btn pink" onclick="showCreateObject()">Create Object</button>
+          <button class="action-btn green" onclick="showCreateFood()">Create Food</button>
+        </div>
+
+        <button class="stamp-btn" onclick="showStampPassport()">STAMP PASSPORT</button>
+      </div>
+    </div>
+
+    <!-- Color Picker Modal -->
+    <div id="colorPickerModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="hideColorPicker()">&times;</span>
+        <h3>Choose Passport Color</h3>
+        <div class="color-grid">
+          <div class="color-swatch" style="background-color: #FFB6C1" onclick="selectColor('#FFB6C1')"></div>
+          <div class="color-swatch" style="background-color: #DDA0DD" onclick="selectColor('#DDA0DD')"></div>
+          <div class="color-swatch" style="background-color: #87CEEB" onclick="selectColor('#87CEEB')"></div>
+          <div class="color-swatch" style="background-color: #90EE90" onclick="selectColor('#90EE90')"></div>
+          <div class="color-swatch" style="background-color: #FFB347" onclick="selectColor('#FFB347')"></div>
+          <div class="color-swatch" style="background-color: #FFFF99" onclick="selectColor('#FFFF99')"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Object Modal -->
+    <div id="createObjectModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="hideCreateObject()">&times;</span>
+        <h3>Create Object</h3>
+        <form id="objectForm">
+          <label>Place:</label>
+          <select id="objectPlace" required>
+            <option value="">Select place...</option>
+          </select>
+          
+          <label>Object Type:</label>
+          <select id="objectType" required>
+            <option value="">Select type...</option>
+            <option value="book">Book</option>
+            <option value="movie">Movie</option>
+            <option value="poem">Poem</option>
+            <option value="fine art">Fine Art</option>
+            <option value="documentary">Documentary</option>
+            <option value="other">Other</option>
+          </select>
+          
+          <label>Object Name:</label>
+          <input type="text" id="objectName" required>
+          
+          <label>Notes (optional):</label>
+          <textarea id="objectNotes"></textarea>
+          
+          <button type="submit">Add Object</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Create Food Modal -->
+    <div id="createFoodModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="hideCreateFood()">&times;</span>
+        <h3>Create Food</h3>
+        <form id="foodForm">
+          <label>Place:</label>
+          <select id="foodPlace" required>
+            <option value="">Select place...</option>
+          </select>
+          
+          <label>Dish Name:</label>
+          <input type="text" id="dishName" required>
+          
+          <button type="submit">Add Food</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Stamp Passport Modal -->
+    <div id="stampModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="hideStampPassport()">&times;</span>
+        <h3>Stamp Passport</h3>
+        <form id="stampForm">
+          <label>Place:</label>
+          <select id="stampPlace" required>
+            <option value="">Select place...</option>
+          </select>
+          
+          <p class="info-text">This will add a stamp to your passport for this location.</p>
+          
+          <button type="submit">Confirm Stamp</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="hideQRCode()">&times;</span>
+        <h3>Share Your Passport</h3>
+        <div id="qrCodeContainer"></div>
+        <p class="qr-url" id="qrUrl"></p>
+      </div>
+    </div>
+
+    <!-- Location Detail Modal -->
+    <div id="locationModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="hideLocationDetail()">&times;</span>
+        <div id="locationDetail"></div>
+        <button class="edit-btn">EDIT</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Set userId globally - ONLY DECLARED ONCE
+    var userId = '<?= userId ?>'.trim();
+    
+    // Update debug display
+    document.getElementById('debugUserId').textContent = userId;
+    
+    console.log('=== PASSPORT INIT ===');
+    console.log('userId:', userId);
+    console.log('userId length:', userId.length);
+    console.log('userId is empty?:', userId === '');
+  </script>
+  
+  <?!= include('Script'); ?>
+</body>
+</html>

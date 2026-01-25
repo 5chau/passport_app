@@ -1,0 +1,511 @@
+<script>
+// Global state
+let userData = null;
+let userLocations = [];
+let userObjects = [];
+let userFood = [];
+let masterLocations = [];
+let totalStamps = 0;
+
+// userId is already declared in Passport.html
+console.log('=== SCRIPT INITIALIZATION ===');
+console.log('userId:', userId);
+console.log('userId type:', typeof userId);
+console.log('userId is valid?:', userId && userId.length > 0);
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', function() {
+  console.log('=== DOMContentLoaded EVENT ===');
+  
+  if (!userId || userId.trim() === '') {
+    console.error('ERROR: userId is empty or invalid!');
+    alert('Error: Invalid user ID. Please check your URL.');
+    return;
+  }
+  
+  // First test the connection
+  console.log('Testing connection to backend...');
+  testBackendConnection();
+});
+
+// Test if we can reach the backend at all
+function testBackendConnection() {
+  google.script.run
+    .withSuccessHandler(function(result) {
+      console.log('=== CONNECTION TEST SUCCESS ===');
+      console.log('Backend is reachable!');
+      console.log('Result:', result);
+      
+      // Connection works, now try to load user data
+      console.log('');
+      console.log('Connection successful, loading user data...');
+      loadAllData();
+    })
+    .withFailureHandler(function(error) {
+      console.error('=== CONNECTION TEST FAILED ===');
+      console.error('Cannot reach backend!');
+      console.error('Error:', error);
+      alert('Error: Cannot connect to server. Please try refreshing the page.');
+    })
+    .testConnection();
+}
+
+function testBackendConnection() {
+  // First check version
+  google.script.run
+    .withSuccessHandler(function(result) {
+      console.log('=== VERSION CHECK ===');
+      console.log('Backend version:', result.version);
+      console.log('Timestamp:', result.timestamp);
+    })
+    .withFailureHandler(function(error) {
+      console.error('Version check failed:', error);
+    })
+    .getVersion();
+  
+  // Then test connection
+  google.script.run
+    .withSuccessHandler(function(result) {
+      console.log('=== CONNECTION TEST SUCCESS ===');
+      console.log('Backend is reachable!');
+      console.log('Result:', result);
+      
+      console.log('');
+      console.log('Connection successful, loading user data...');
+      loadAllData();
+    })
+    .withFailureHandler(function(error) {
+      console.error('=== CONNECTION TEST FAILED ===');
+      console.error('Cannot reach backend!');
+      console.error('Error:', error);
+      alert('Error: Cannot connect to server. Please try refreshing the page.');
+    })
+    .testConnection();
+}
+
+// ===== DATA LOADING =====
+function loadAllData() {
+  console.log('=== loadAllData() called ===');
+  console.log('Requesting user data for userId:', userId);
+  
+  google.script.run
+    .withSuccessHandler(function(data) {
+      console.log('=== getUserData RESPONSE ===');
+      console.log('Data type:', typeof data);
+      console.log('Data is null?:', data === null);
+      console.log('Data value:', data);
+      
+      // Check for debug info
+      if (data && data._debug) {
+        console.log('🔍 DEBUG INFO:', data._debug);
+      }
+      
+      // Check if this is an error response
+      if (data && data._error) {
+        console.error('❌ ERROR from backend:', data._error);
+        console.error('Debug info:', data._debug);
+        console.error('UserId searched:', data._userId);
+        console.error('Rows checked:', data._rowsChecked);
+        alert('User not found!\n\nUserId: ' + userId + '\nRows checked: ' + data._rowsChecked + '\n\nDebug: ' + data._debug);
+        return;
+      }
+      
+      if (data && data.first_name) {
+        console.log('✓ User found:', data.first_name, data.last_name);
+        if (data._debug) {
+          console.log('Success path:', data._debug);
+        }
+        userData = data;
+        updateUserInfo();
+        setCoverColor(data.passport_color);
+        loadLocations();
+        loadObjects();
+        loadFood();
+        loadMasterLocations();
+        getTotalStampsCount();
+      } else {
+        console.error('✗ Unexpected response format');
+        console.error('Response:', data);
+        alert('Unexpected response from server. Check console for details.');
+      }
+    })
+    .withFailureHandler(function(error) {
+      console.error('=== getUserData FAILURE ===');
+      console.error('Error object:', error);
+      console.error('Error message:', error.message);
+      alert('Error loading passport data: ' + (error.message || 'Unknown error'));
+    })
+    .getUserData(userId);
+}
+
+function loadLocations() {
+  console.log('Loading locations...');
+  google.script.run
+    .withSuccessHandler(function(locations) {
+      console.log('✓ Locations loaded:', locations.length);
+      userLocations = locations;
+      displayStamps();
+      updateProgress();
+    })
+    .withFailureHandler(function(error) {
+      console.error('✗ Error loading locations:', error);
+    })
+    .getUserLocations(userId);
+}
+
+function loadObjects() {
+  console.log('Loading objects...');
+  google.script.run
+    .withSuccessHandler(function(objects) {
+      console.log('✓ Objects loaded:', objects.length);
+      userObjects = objects;
+      displayCurrentlyViewing();
+    })
+    .withFailureHandler(function(error) {
+      console.error('✗ Error loading objects:', error);
+    })
+    .getUserObjects(userId);
+}
+
+function loadFood() {
+  console.log('Loading food...');
+  google.script.run
+    .withSuccessHandler(function(foods) {
+      console.log('✓ Foods loaded:', foods.length);
+      userFood = foods;
+    })
+    .withFailureHandler(function(error) {
+      console.error('✗ Error loading food:', error);
+    })
+    .getUserFood(userId);
+}
+
+function loadMasterLocations() {
+  console.log('Loading master locations...');
+  google.script.run
+    .withSuccessHandler(function(locations) {
+      console.log('✓ Master locations loaded:', locations.length);
+      masterLocations = locations.filter(loc => loc.is_active);
+      populateLocationDropdowns();
+    })
+    .withFailureHandler(function(error) {
+      console.error('✗ Error loading master locations:', error);
+    })
+    .getMasterLocations();
+}
+
+function getTotalStampsCount() {
+  console.log('Getting total stamps count...');
+  google.script.run
+    .withSuccessHandler(function(count) {
+      console.log('✓ Total stamps:', count);
+      totalStamps = count;
+      updateProgress();
+    })
+    .withFailureHandler(function(error) {
+      console.error('✗ Error getting total stamps:', error);
+    })
+    .getTotalStamps();
+}
+
+// ===== DISPLAY FUNCTIONS =====
+function updateUserInfo() {
+  if (!userData) return;
+  
+  console.log('Updating user info:', userData.first_name);
+  document.getElementById('userName').textContent = userData.first_name;
+  document.getElementById('userInsta').textContent = userData.instagram_handle;
+}
+
+function setCoverColor(color) {
+  console.log('Setting cover color:', color);
+  const cover = document.querySelector('.passport-cover');
+  if (cover && color) {
+    cover.style.backgroundColor = color;
+  }
+}
+
+function displayStamps() {
+  const container = document.getElementById('stampsContainer');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  
+  if (userLocations.length === 0) {
+    container.innerHTML = '<p style="color: #999; font-size: 14px;">No stamps yet</p>';
+    return;
+  }
+  
+  // Get unique places
+  const uniquePlaces = [...new Set(userLocations.map(loc => loc.place))];
+  
+  uniquePlaces.forEach(place => {
+    const masterLoc = masterLocations.find(ml => ml.place === place);
+    const stampColor = masterLoc ? masterLoc.stamp_color : '#000000';
+    
+    const stampEl = document.createElement('div');
+    stampEl.className = 'stamp';
+    stampEl.onclick = () => showLocationDetail(place);
+    
+    stampEl.innerHTML = `
+      <div class="stamp-icon" style="color: ${stampColor}">*</div>
+      <div class="stamp-label">${place}</div>
+    `;
+    
+    container.appendChild(stampEl);
+  });
+}
+
+function displayCurrentlyViewing() {
+  const currentObjectEl = document.getElementById('currentObject');
+  if (!currentObjectEl) return;
+  
+  google.script.run
+    .withSuccessHandler(function(object) {
+      if (object) {
+        currentObjectEl.textContent = object.object_name;
+        currentObjectEl.style.cursor = 'pointer';
+        currentObjectEl.onclick = () => showLocationDetail(object.place);
+      } else {
+        currentObjectEl.textContent = '—';
+        currentObjectEl.style.cursor = 'default';
+        currentObjectEl.onclick = null;
+      }
+    })
+    .getCurrentlyViewing(userId);
+}
+
+function updateProgress() {
+  const userStampsEl = document.getElementById('userStamps');
+  const totalStampsEl = document.getElementById('totalStamps');
+  const progressFill = document.getElementById('progressFill');
+  
+  if (!userStampsEl || !totalStampsEl || !progressFill) return;
+  
+  const uniquePlaces = [...new Set(userLocations.map(loc => loc.place))];
+  const userCount = uniquePlaces.length;
+  
+  userStampsEl.textContent = userCount;
+  totalStampsEl.textContent = totalStamps;
+  
+  const percentage = totalStamps > 0 ? (userCount / totalStamps) * 100 : 0;
+  progressFill.style.width = percentage + '%';
+}
+
+function populateLocationDropdowns() {
+  const selects = [
+    document.getElementById('objectPlace'),
+    document.getElementById('foodPlace'),
+    document.getElementById('stampPlace')
+  ];
+  
+  selects.forEach(select => {
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Select place...</option>';
+    
+    masterLocations.forEach(location => {
+      const option = document.createElement('option');
+      option.value = location.place;
+      option.textContent = location.place;
+      select.appendChild(option);
+    });
+  });
+}
+
+// ===== VIEW NAVIGATION =====
+function openPassport() {
+  console.log('=== openPassport() called ===');
+  
+  if (!userData) {
+    console.log('⚠️ No user data yet, waiting...');
+    alert('Please wait for data to load before opening passport');
+    return;
+  }
+  
+  console.log('✓ Opening passport for:', userData.first_name);
+  document.getElementById('coverView').classList.remove('active');
+  document.getElementById('interiorView').classList.add('active');
+}
+
+// ===== COLOR PICKER =====
+function showColorPicker() {
+  document.getElementById('colorPickerModal').classList.add('active');
+}
+
+function hideColorPicker() {
+  document.getElementById('colorPickerModal').classList.remove('active');
+}
+
+function selectColor(color) {
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result.success) {
+        setCoverColor(color);
+        userData.passport_color = color;
+        hideColorPicker();
+      } else {
+        alert('Error updating color: ' + result.message);
+      }
+    })
+    .withFailureHandler(function(error) {
+      alert('Error: ' + error.message);
+    })
+    .updatePassportColor(userId, color);
+}
+
+// ===== CREATE OBJECT =====
+function showCreateObject() {
+  document.getElementById('createObjectModal').classList.add('active');
+}
+
+function hideCreateObject() {
+  document.getElementById('createObjectModal').classList.remove('active');
+  document.getElementById('objectForm').reset();
+}
+
+document.getElementById('objectForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const place = document.getElementById('objectPlace').value;
+  const type = document.getElementById('objectType').value;
+  const name = document.getElementById('objectName').value;
+  const notes = document.getElementById('objectNotes').value;
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result.success) {
+        alert(result.message);
+        hideCreateObject();
+        loadObjects();
+      } else {
+        alert('Error: ' + result.message);
+      }
+    })
+    .withFailureHandler(function(error) {
+      alert('Error: ' + error.message);
+    })
+    .addObject(userId, place, type, name, notes);
+});
+
+// ===== CREATE FOOD =====
+function showCreateFood() {
+  document.getElementById('createFoodModal').classList.add('active');
+}
+
+function hideCreateFood() {
+  document.getElementById('createFoodModal').classList.remove('active');
+  document.getElementById('foodForm').reset();
+}
+
+document.getElementById('foodForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const place = document.getElementById('foodPlace').value;
+  const dishName = document.getElementById('dishName').value;
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result.success) {
+        alert(result.message);
+        hideCreateFood();
+        loadFood();
+      } else {
+        alert('Error: ' + result.message);
+      }
+    })
+    .withFailureHandler(function(error) {
+      alert('Error: ' + error.message);
+    })
+    .addFood(userId, place, dishName);
+});
+
+// ===== STAMP PASSPORT =====
+function showStampPassport() {
+  document.getElementById('stampModal').classList.add('active');
+}
+
+function hideStampPassport() {
+  document.getElementById('stampModal').classList.remove('active');
+  document.getElementById('stampForm').reset();
+}
+
+document.getElementById('stampForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const place = document.getElementById('stampPlace').value;
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result.success) {
+        alert(result.message);
+        hideStampPassport();
+        loadLocations();
+      } else {
+        alert('Error: ' + result.message);
+      }
+    })
+    .withFailureHandler(function(error) {
+      alert('Error: ' + error.message);
+    })
+    .stampPassport(userId, place);
+});
+
+// ===== QR CODE =====
+function showQRCode() {
+  const modal = document.getElementById('qrModal');
+  const container = document.getElementById('qrCodeContainer');
+  const urlEl = document.getElementById('qrUrl');
+  
+  if (userData && userData.unique_url) {
+    container.innerHTML = `
+      <div style="width: 200px; height: 200px; border: 2px solid black; display: flex; align-items: center; justify-content: center; font-size: 12px; text-align: center; padding: 20px;">
+        QR Code<br>for<br>${userData.unique_url}
+      </div>
+    `;
+    urlEl.textContent = userData.unique_url;
+    modal.classList.add('active');
+  }
+}
+
+function hideQRCode() {
+  document.getElementById('qrModal').classList.remove('active');
+}
+
+// ===== LOCATION DETAIL =====
+function showLocationDetail(place) {
+  const modal = document.getElementById('locationModal');
+  const detailDiv = document.getElementById('locationDetail');
+  
+  const location = userLocations.find(loc => loc.place === place);
+  const object = userObjects.find(obj => obj.place === place);
+  const food = userFood.find(f => f.place === place);
+  const masterLoc = masterLocations.find(ml => ml.place === place);
+  
+  let html = `<h3 style="color: ${masterLoc ? masterLoc.stamp_color : '#000'}">* ${place}</h3>`;
+  
+  if (location) {
+    const visitDate = new Date(location.date_visited);
+    html += `<p><strong>Date:</strong> ${visitDate.toLocaleDateString()}</p>`;
+  }
+  
+  if (object) {
+    html += `<p><strong>Object Type:</strong> ${object.object_type}</p>`;
+    html += `<p><strong>Object Name:</strong> ${object.object_name}</p>`;
+    if (object.notes) {
+      html += `<p><strong>Notes:</strong> ${object.notes}</p>`;
+    }
+  }
+  
+  if (food) {
+    html += `<p><strong>Food:</strong> ${food.dish_name}</p>`;
+  }
+  
+  detailDiv.innerHTML = html;
+  modal.classList.add('active');
+}
+
+function hideLocationDetail() {
+  document.getElementById('locationModal').classList.remove('active');
+}
+</script>
