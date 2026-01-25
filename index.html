@@ -9,7 +9,8 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#000000">
 
-  <!-- iOS specific -->
+  <!-- iOS and Mobile specific -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="215 Passport">
@@ -30,17 +31,19 @@
     </div>
     <script>
       // Apply cached color immediately to prevent flash
-      const urlParams = new URLSearchParams(window.location.search);
-      const userId = urlParams.get('user_id');
-      if (userId) {
-        const cachedColor = localStorage.getItem(`passportColor_${userId}`);
-        if (cachedColor) {
-          const cover = document.querySelector('.passport-cover');
-          const avatar = document.querySelector('.avatar');
-          if (cover) cover.style.backgroundColor = cachedColor;
-          if (avatar) avatar.style.backgroundColor = cachedColor;
+      (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id');
+        if (userId) {
+          const cachedColor = localStorage.getItem(`passportColor_${userId}`);
+          if (cachedColor) {
+            const cover = document.querySelector('.passport-cover');
+            const avatar = document.querySelector('.avatar');
+            if (cover) cover.style.backgroundColor = cachedColor;
+            if (avatar) avatar.style.backgroundColor = cachedColor;
+          }
         }
-      }
+      })();
     </script>
 
     <!-- Interior View -->
