@@ -17,6 +17,20 @@
         <button class="enter-btn" onclick="openPassport()">enter →</button>
       </div>
     </div>
+    <script>
+      // Apply cached color immediately to prevent flash
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('user_id');
+      if (userId) {
+        const cachedColor = localStorage.getItem(`passportColor_${userId}`);
+        if (cachedColor) {
+          const cover = document.querySelector('.passport-cover');
+          const avatar = document.querySelector('.avatar');
+          if (cover) cover.style.backgroundColor = cachedColor;
+          if (avatar) avatar.style.backgroundColor = cachedColor;
+        }
+      }
+    </script>
 
     <!-- Interior View -->
     <div id="interiorView" class="view">
