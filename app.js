@@ -76,6 +76,12 @@ async function loadAllData() {
   console.log('=== loadAllData() called ===');
   console.log('Loading data for userId:', userId);
 
+  // Apply cached color immediately if available
+  const cachedColor = localStorage.getItem(`passportColor_${userId}`);
+  if (cachedColor) {
+    setCoverColor(cachedColor);
+  }
+
   try {
     const data = await callAPI('getUserData', { userId: userId });
 
@@ -179,8 +185,15 @@ function updateUserInfo() {
 function setCoverColor(color) {
   console.log('Setting cover color:', color);
   const cover = document.querySelector('.passport-cover');
+  const avatar = document.querySelector('.avatar');
+
   if (cover && color) {
     cover.style.backgroundColor = color;
+    localStorage.setItem(`passportColor_${userId}`, color);
+  }
+
+  if (avatar && color) {
+    avatar.style.backgroundColor = color;
   }
 }
 

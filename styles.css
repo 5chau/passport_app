@@ -42,7 +42,6 @@ body {
 
 /* ===== COVER VIEW ===== */
 .passport-cover {
-  background-color: #FFFFFF;
   width: 100%;
   max-width: 400px;
   min-height: 600px;
@@ -87,6 +86,7 @@ body {
   padding: 15px 40px;
   font-family: 'Providence Sans Regular', sans-serif;
   font-size: 18px;
+  color: black
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -125,7 +125,6 @@ body {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: #87CEEB;
   flex-shrink: 0;
 }
 
@@ -135,7 +134,7 @@ body {
 
 .user-details p {
   margin: 5px 0;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .share-btn {
@@ -150,7 +149,7 @@ body {
 }
 
 .section-title {
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 10px;
   font-weight: normal;
 }
@@ -177,7 +176,7 @@ body {
 
 .progress-text {
   text-align: right;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .currently-viewing {
@@ -220,7 +219,7 @@ body {
 }
 
 .stamp-label {
-  font-size: 12px;
+  font-size: 16px;
   text-align: center;
 }
 
@@ -236,7 +235,8 @@ body {
   border: none;
   border-radius: 8px;
   font-family: 'Providence Sans Regular', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
+  color: black;
   cursor: pointer;
   transition: opacity 0.2s;
 }
@@ -262,6 +262,7 @@ body {
   font-family: 'Providence Sans Regular', sans-serif;
   font-size: 18px;
   letter-spacing: 2px;
+  color: black;
   cursor: pointer;
   transition: opacity 0.2s;
 }
