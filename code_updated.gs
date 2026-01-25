@@ -28,12 +28,99 @@ function getSheets() {
 // ===================================
 
 // Handle GET requests (no longer serving HTML)
+// Handle GET requests - API endpoint
 function doGet(e) {
-  return HtmlService.createHtmlOutput(
-    '<h1>215 Supper Club API</h1>' +
-    '<p>This is the backend API for 215 Supper Club Passport.</p>' +
-    '<p>Please use your unique passport link to access your passport.</p>'
-  );
+  try {
+    var params = e.parameter;
+    var action = params.action;
+    var result;
+
+    Logger.log('API Request - Action: ' + action);
+    Logger.log('Request params: ' + JSON.stringify(params));
+
+    switch(action) {
+      case 'registerUser':
+        result = registerUser(params.firstName, params.lastName, params.instaHandle);
+        break;
+
+      case 'getUserData':
+        result = getUserData(params.userId);
+        break;
+
+      case 'getUserLocations':
+        result = getUserLocations(params.userId);
+        break;
+
+      case 'getUserObjects':
+        result = getUserObjects(params.userId);
+        break;
+
+      case 'getUserFood':
+        result = getUserFood(params.userId);
+        break;
+
+      case 'getMasterLocations':
+        result = getMasterLocations();
+        break;
+
+      case 'getCurrentlyViewing':
+        result = getCurrentlyViewing(params.userId);
+        break;
+
+      case 'getTotalStamps':
+        result = getTotalStamps();
+        break;
+
+      case 'updatePassportColor':
+        result = updatePassportColor(params.userId, params.newColor);
+        break;
+
+      case 'addObject':
+        result = addObject(params.userId, params.place, params.objectType, params.objectName, params.notes || '');
+        break;
+
+      case 'addFood':
+        result = addFood(params.userId, params.place, params.dishName);
+        break;
+
+      case 'stampPassport':
+        result = stampPassport(params.userId, params.place);
+        break;
+
+      case 'getAdminStatus':
+        result = getAdminStatus(params.userId);
+        break;
+
+      case 'setLocation':
+        result = setLocation(params.userId, params.place, params.stampColor);
+        break;
+
+      default:
+        // No action provided - show API info page
+        return HtmlService.createHtmlOutput(
+          '<h1>215 Supper Club API</h1>' +
+          '<p>This is the backend API for 215 Supper Club Passport.</p>' +
+          '<p>Please use your unique passport link to access your passport.</p>'
+        );
+    }
+
+    Logger.log('API Response: ' + JSON.stringify(result));
+
+    return ContentService
+      .createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch(error) {
+    Logger.log('API Error: ' + error.message);
+    Logger.log('Stack trace: ' + error.stack);
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        error: error.message,
+        stack: error.stack
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 // Handle POST requests (API endpoints)
