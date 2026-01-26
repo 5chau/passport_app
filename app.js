@@ -102,14 +102,30 @@ async function loadAllData() {
         loadMasterLocations(),
         getTotalStampsCount()
       ]);
+
+      // Hide loading overlay once all data is loaded
+      hideLoadingOverlay();
     } else {
       console.error('✗ User not found');
+      hideLoadingOverlay();
       alert('User not found. Please check your URL or register again.');
       window.location.href = 'register.html';
     }
   } catch (error) {
     console.error('Error loading passport data:', error);
+    hideLoadingOverlay();
     alert('Error loading passport data: ' + error.message);
+  }
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.classList.add('hidden');
+    // Remove from DOM after transition
+    setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 300);
   }
 }
 
