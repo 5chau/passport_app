@@ -41,7 +41,22 @@
       // Apply cached color immediately to prevent flash
       (function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('user_id');
+        let userId = urlParams.get('user_id');
+
+        // If user_id is in URL, save it to localStorage
+        if (userId) {
+          localStorage.setItem('savedUserId', userId);
+        } else {
+          // If no user_id in URL, try to load from localStorage
+          const savedUserId = localStorage.getItem('savedUserId');
+          if (savedUserId) {
+            // Redirect to include the user_id parameter
+            window.location.search = `?user_id=${savedUserId}`;
+            return;
+          }
+        }
+
+        // Apply cached color
         if (userId) {
           const cachedColor = localStorage.getItem(`passportColor_${userId}`);
           if (cachedColor) {

@@ -367,7 +367,6 @@ button[type="submit"], .edit-btn {
   border-radius: 4px;
   font-family: 'Providence Sans Regular', sans-serif;
   font-size: 14px;
-  color: black;
   cursor: pointer;
   transition: opacity 0.2s;
 }
