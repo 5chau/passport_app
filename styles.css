@@ -367,14 +367,14 @@ button[type="submit"], .edit-btn {
   border-radius: 4px;
   font-family: 'Providence Sans Regular', sans-serif;
   font-size: 14px;
-  color: white;
+  color: black;
   cursor: pointer;
   transition: opacity 0.2s;
 }
 
 button[type="submit"]:hover, .edit-btn:hover {
   opacity: 0.8;
-    color: white;
+    color: black;
 
 }
 

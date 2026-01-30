@@ -10,10 +10,18 @@ let userId = null;
 // Extract userId from URL parameter
 function getUserIdFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('user_id');
+  let id = urlParams.get('user_id');
 
   if (!id || id.trim() === '') {
-    // No user_id found, redirect to registration
+    // Try to get from localStorage (for home screen app)
+    const savedUserId = localStorage.getItem('savedUserId');
+    if (savedUserId) {
+      // Redirect to include the user_id parameter
+      window.location.search = `?user_id=${savedUserId}`;
+      return null;
+    }
+
+    // No user_id found anywhere, redirect to registration
     window.location.href = 'register.html';
     return null;
   }
